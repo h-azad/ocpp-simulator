@@ -19,4 +19,6 @@ export interface IProtocolAdapter {
     stopTransaction(transactionId: number, meterStop: number, idTag: string): Promise<{ idTagInfo: { status: string } }>;
     sendStatusNotification(connectorId: number, status: string, errorCode?: string): Promise<void>;
     sendMeterValues(connectorId: number, transactionId: number, meterValue: number): Promise<void>;
+    sendFirmwareStatusNotification(status: 'Downloaded' | 'DownloadFailed' | 'Downloading' | 'Idle' | 'InstallationFailed' | 'Installing' | 'Installed'): Promise<void>;
+    sendDiagnosticsStatusNotification(status: 'Idle' | 'Uploaded' | 'UploadFailed' | 'Uploading'): Promise<void>;
 }

@@ -33,6 +33,19 @@ export class Charger {
                         return { status: 'Accepted' };
                     case 'UnlockConnector':
                         return { status: 'Unlocked' };
+                    case 'SetChargingProfile':
+                        await this.handleSetChargingProfile(payload);
+                        return { status: 'Accepted' };
+                    case 'ClearChargingProfile':
+                        await this.handleClearChargingProfile(payload);
+                        return { status: 'Accepted' };
+                    case 'UpdateFirmware':
+                        // Async simulation
+                        this.handleUpdateFirmware(payload).catch(console.error);
+                        return {}; // Empty response
+                    case 'GetDiagnostics':
+                        this.handleGetDiagnostics(payload).catch(console.error);
+                        return { fileName: 'diagnostics.log' };
                     default:
                         throw new Error('NotImplemented');
                 }
@@ -184,5 +197,50 @@ export class Charger {
                 await this.boot();
             }, 2000);
         }, 1000);
+    }
+
+    private async handleSetChargingProfile(payload: any) {
+        console.log('Set Charging Profile received', payload);
+        const profile = payload.csChargingProfiles;
+        // Just storing a summary for UI display
+        this.state.activeChargingProfile = `ID: ${profile.chargingProfileId}, Purpose: ${profile.chargingProfilePurpose}, Kind: ${profile.chargingProfileKind}`;
+        this.notifyStateChange();
+    }
+
+    private async handleClearChargingProfile(payload: any) {
+        console.log('Clear Charging Profile received', payload);
+        this.state.activeChargingProfile = undefined;
+        this.notifyStateChange();
+    }
+
+    private async handleUpdateFirmware(payload: any) {
+        console.log('Update Firmware requested', payload);
+        // Flow: Idle -> Downloading -> Downloaded -> Installing -> Installed -> Reboot
+        await this.adapter.sendFirmwareStatusNotification('Downloading');
+
+        // Simulate download
+        setTimeout(async () => {
+            await this.adapter.sendFirmwareStatusNotification('Downloaded');
+
+            // Simulate installation
+            setTimeout(async () => {
+                await this.adapter.sendFirmwareStatusNotification('Installing');
+
+                setTimeout(async () => {
+                    await this.adapter.sendFirmwareStatusNotification('Installed');
+                    // Reboot
+                    await this.handleReset('Soft');
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    }
+
+    private async handleGetDiagnostics(payload: any) {
+        console.log('Get Diagnostics requested', payload);
+        await this.adapter.sendDiagnosticsStatusNotification('Uploading');
+        // Simulate upload
+        setTimeout(async () => {
+            await this.adapter.sendDiagnosticsStatusNotification('Uploaded');
+        }, 3000);
     }
 }

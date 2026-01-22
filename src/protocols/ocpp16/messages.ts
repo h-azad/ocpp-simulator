@@ -22,6 +22,24 @@ export type StatusNotificationResponse = z.infer<typeof schemas.StatusNotificati
 export type MeterValuesRequest = z.infer<typeof schemas.MeterValuesRequestSchema>;
 export type MeterValuesResponse = z.infer<typeof schemas.MeterValuesResponseSchema>;
 
+export type SetChargingProfileRequest = z.infer<typeof schemas.SetChargingProfileRequestSchema>;
+export type SetChargingProfileResponse = z.infer<typeof schemas.SetChargingProfileResponseSchema>;
+
+export type ClearChargingProfileRequest = z.infer<typeof schemas.ClearChargingProfileRequestSchema>;
+export type ClearChargingProfileResponse = z.infer<typeof schemas.ClearChargingProfileResponseSchema>;
+
+export type UpdateFirmwareRequest = z.infer<typeof schemas.UpdateFirmwareRequestSchema>;
+export type UpdateFirmwareResponse = z.infer<typeof schemas.UpdateFirmwareResponseSchema>;
+
+export type GetDiagnosticsRequest = z.infer<typeof schemas.GetDiagnosticsRequestSchema>;
+export type GetDiagnosticsResponse = z.infer<typeof schemas.GetDiagnosticsResponseSchema>;
+
+export type FirmwareStatusNotificationRequest = z.infer<typeof schemas.FirmwareStatusNotificationRequestSchema>;
+export type FirmwareStatusNotificationResponse = z.infer<typeof schemas.FirmwareStatusNotificationResponseSchema>;
+
+export type DiagnosticsStatusNotificationRequest = z.infer<typeof schemas.DiagnosticsStatusNotificationRequestSchema>;
+export type DiagnosticsStatusNotificationResponse = z.infer<typeof schemas.DiagnosticsStatusNotificationResponseSchema>;
+
 // Message Type constants
 export enum MessageType {
     CALL = 2,
@@ -37,4 +55,12 @@ export type ActionName =
     | 'StartTransaction'
     | 'StopTransaction'
     | 'StatusNotification'
-    | 'MeterValues';
+    | 'StatusNotification'
+    | 'MeterValues'
+    | 'SetChargingProfile'
+    | 'SetChargingProfile'
+    | 'ClearChargingProfile'
+    | 'UpdateFirmware'
+    | 'GetDiagnostics'
+    | 'FirmwareStatusNotification'
+    | 'DiagnosticsStatusNotification';

@@ -100,3 +100,82 @@ export const MeterValuesRequestSchema = z.object({
 });
 
 export const MeterValuesResponseSchema = z.object({});
+
+// --- Smart Charging ---
+
+export const ChargingSchedulePeriodSchema = z.object({
+    startPeriod: z.number().int(),
+    limit: z.number(),
+    numberPhases: z.number().int().optional(),
+});
+
+export const ChargingScheduleSchema = z.object({
+    duration: z.number().int().optional(),
+    startSchedule: z.string().optional(),
+    chargingRateUnit: z.enum(['A', 'W']),
+    chargingSchedulePeriod: z.array(ChargingSchedulePeriodSchema),
+    minChargingRate: z.number().optional(),
+});
+
+export const ChargingProfileSchema = z.object({
+    chargingProfileId: z.number().int(),
+    transactionId: z.number().int().optional(),
+    stackLevel: z.number().int().min(0),
+    chargingProfilePurpose: z.enum(['ChargePointMaxProfile', 'TxDefaultProfile', 'TxProfile']),
+    chargingProfileKind: z.enum(['Absolute', 'Recurring', 'Relative']),
+    recurrencyKind: z.enum(['Daily', 'Weekly']).optional(),
+    validFrom: z.string().optional(),
+    validTo: z.string().optional(),
+    chargingSchedule: ChargingScheduleSchema,
+});
+
+export const SetChargingProfileRequestSchema = z.object({
+    connectorId: z.number().int().min(0),
+    csChargingProfiles: ChargingProfileSchema,
+});
+
+export const SetChargingProfileResponseSchema = z.object({
+    status: z.enum(['Accepted', 'Rejected', 'NotSupported']),
+});
+
+export const ClearChargingProfileRequestSchema = z.object({
+    id: z.number().int().optional(),
+    connectorId: z.number().int().optional(),
+    chargingProfilePurpose: z.enum(['ChargePointMaxProfile', 'TxDefaultProfile', 'TxProfile']).optional(),
+    stackLevel: z.number().int().optional(),
+});
+
+export const ClearChargingProfileResponseSchema = z.object({
+    status: z.enum(['Accepted', 'Unknown']),
+});
+
+// --- Firmware & Diagnostics ---
+
+export const UpdateFirmwareRequestSchema = z.object({
+    location: z.string(),
+    retries: z.number().int().optional(),
+    retrieveDate: z.string(),
+    retryInterval: z.number().int().optional(),
+});
+export const UpdateFirmwareResponseSchema = z.object({});
+
+export const GetDiagnosticsRequestSchema = z.object({
+    location: z.string(),
+    retries: z.number().int().optional(),
+    retryInterval: z.number().int().optional(),
+    startTime: z.string().optional(),
+    stopTime: z.string().optional(),
+});
+export const GetDiagnosticsResponseSchema = z.object({
+    fileName: z.string().optional(),
+});
+
+export const FirmwareStatusNotificationRequestSchema = z.object({
+    status: z.enum(['Downloaded', 'DownloadFailed', 'Downloading', 'Idle', 'InstallationFailed', 'Installing', 'Installed']),
+});
+export const FirmwareStatusNotificationResponseSchema = z.object({});
+
+export const DiagnosticsStatusNotificationRequestSchema = z.object({
+    status: z.enum(['Idle', 'Uploaded', 'UploadFailed', 'Uploading']),
+});
+export const DiagnosticsStatusNotificationResponseSchema = z.object({});

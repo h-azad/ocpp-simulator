@@ -8,7 +8,9 @@ import {
     StartTransactionRequest, StartTransactionResponse,
     StopTransactionRequest, StopTransactionResponse,
     StatusNotificationRequest, StatusNotificationResponse,
-    MeterValuesRequest, MeterValuesResponse
+    MeterValuesRequest, MeterValuesResponse,
+    FirmwareStatusNotificationRequest, FirmwareStatusNotificationResponse,
+    DiagnosticsStatusNotificationRequest, DiagnosticsStatusNotificationResponse
 } from './messages';
 
 export class Ocpp16JsonAdapter implements IProtocolAdapter {
@@ -132,6 +134,16 @@ export class Ocpp16JsonAdapter implements IProtocolAdapter {
             }]
         };
         await this.callAction<MeterValuesResponse>('MeterValues', request);
+    }
+
+    async sendFirmwareStatusNotification(status: 'Downloaded' | 'DownloadFailed' | 'Downloading' | 'Idle' | 'InstallationFailed' | 'Installing' | 'Installed'): Promise<void> {
+        const request: FirmwareStatusNotificationRequest = { status };
+        await this.callAction<FirmwareStatusNotificationResponse>('FirmwareStatusNotification', request);
+    }
+
+    async sendDiagnosticsStatusNotification(status: 'Idle' | 'Uploaded' | 'UploadFailed' | 'Uploading'): Promise<void> {
+        const request: DiagnosticsStatusNotificationRequest = { status };
+        await this.callAction<DiagnosticsStatusNotificationResponse>('DiagnosticsStatusNotification', request);
     }
 
     // --- Internal Helper ---

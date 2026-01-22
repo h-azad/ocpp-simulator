@@ -6,6 +6,7 @@ type Charger = {
     chargerId: string;
     status: string;
     version?: string;
+    activeChargingProfile?: string;
 };
 
 type Log = {
@@ -41,7 +42,7 @@ export default function SimulatorDashboard() {
                 fetchChargers();
             } else if (data.type === 'charger_updated') {
                 setChargers(prev => prev.map(c =>
-                    c.chargerId === data.chargerId ? { ...c, status: data.status } : c
+                    c.chargerId === data.chargerId ? { ...c, status: data.status, activeChargingProfile: data.activeChargingProfile } : c
                 ));
             }
         };
@@ -156,15 +157,22 @@ export default function SimulatorDashboard() {
                                 <div
                                     key={c.chargerId}
                                     onClick={() => setSelectedCharger(c.chargerId)}
-                                    className={`p-3 rounded cursor-pointer transition flex justify-between items-center ${selectedCharger === c.chargerId ? 'bg-blue-900 border border-blue-500' : 'bg-gray-700 hover:bg-gray-600'}`}
+                                    className={`p-3 rounded cursor-pointer transition flex flex-col ${selectedCharger === c.chargerId ? 'bg-blue-900 border border-blue-500' : 'bg-gray-700 hover:bg-gray-600'}`}
                                 >
-                                    <span>
-                                        {c.chargerId}
-                                        {c.version && <span className="ml-2 text-xs text-gray-400">({c.version})</span>}
-                                    </span>
-                                    <span className={`text-xs px-2 py-1 rounded ${c.status === 'Connected' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
-                                        {c.status}
-                                    </span>
+                                    <div className="flex justify-between items-center w-full">
+                                        <span className="font-medium">
+                                            {c.chargerId}
+                                            {c.version && <span className="ml-2 text-xs text-gray-400">({c.version})</span>}
+                                        </span>
+                                        <span className={`text-xs px-2 py-1 rounded ${c.status === 'Connected' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
+                                            {c.status}
+                                        </span>
+                                    </div>
+                                    {c.activeChargingProfile && (
+                                        <div className="mt-2 text-xs text-yellow-300 bg-gray-800 p-1 rounded border border-yellow-700">
+                                            ⚡ Profile: {c.activeChargingProfile}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             {chargers.length === 0 && <p className="text-gray-500 text-sm">No chargers active.</p>}
@@ -240,6 +248,47 @@ export default function SimulatorDashboard() {
                                         className="bg-yellow-900 hover:bg-yellow-800 text-yellow-100 py-2 px-3 rounded text-sm transition border border-yellow-700"
                                     >
                                         Trigger Unlock Connector
+                                    </button>
+                                    <button
+                                        onClick={() => triggerCsmsCommand(selectedCharger, 'SetChargingProfile', {
+                                            connectorId: 1,
+                                            csChargingProfiles: {
+                                                chargingProfileId: 1,
+                                                stackLevel: 1,
+                                                chargingProfilePurpose: 'TxProfile',
+                                                chargingProfileKind: 'Relative',
+                                                chargingSchedule: {
+                                                    chargingRateUnit: 'W',
+                                                    chargingSchedulePeriod: [{ startPeriod: 0, limit: 1000 }]
+                                                }
+                                            }
+                                        })}
+                                        className="bg-indigo-900 hover:bg-indigo-800 text-indigo-100 py-2 px-3 rounded text-sm transition border border-indigo-700"
+                                    >
+                                        Trigger Set Charging Profile (Limit 1kW)
+                                    </button>
+                                    <button
+                                        onClick={() => triggerCsmsCommand(selectedCharger, 'ClearChargingProfile', {})}
+                                        className="bg-gray-700 hover:bg-gray-600 text-gray-200 py-2 px-3 rounded text-sm transition border border-gray-600"
+                                    >
+                                        Trigger Clear Charging Profile
+                                    </button>
+                                    <button
+                                        onClick={() => triggerCsmsCommand(selectedCharger, 'UpdateFirmware', {
+                                            location: 'http://firmware.server/fw.bin',
+                                            retrieveDate: new Date().toISOString()
+                                        })}
+                                        className="bg-pink-900 hover:bg-pink-800 text-pink-100 py-2 px-3 rounded text-sm transition border border-pink-700"
+                                    >
+                                        Trigger Firmware Update
+                                    </button>
+                                    <button
+                                        onClick={() => triggerCsmsCommand(selectedCharger, 'GetDiagnostics', {
+                                            location: 'http://diagnostics.server/upload',
+                                        })}
+                                        className="bg-teal-900 hover:bg-teal-800 text-teal-100 py-2 px-3 rounded text-sm transition border border-teal-700"
+                                    >
+                                        Trigger Get Diagnostics
                                     </button>
                                 </div>
                             </div>

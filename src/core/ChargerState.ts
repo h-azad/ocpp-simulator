@@ -23,6 +23,7 @@ export interface ChargerState {
     csmsUrl?: string;
     heartbeatInterval: number; // in seconds
     booted: boolean;
+    activeChargingProfile?: string; // Summary or JSON string of the active profile
 }
 
 export const createInitialConnectorState = (id: number): ConnectorState => ({

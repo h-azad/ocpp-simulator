@@ -207,4 +207,15 @@ export class Ocpp201Adapter implements IProtocolAdapter {
     async sendMeterValues() {
         // TODO: Implement TransactionEvent(Updated) for periodic meter values
     }
+
+    async sendFirmwareStatusNotification(status: string): Promise<void> {
+        // 2.0.1 uses FirmwareStatusNotificationRequest
+        // Status enum is slightly different (e.g. "Downloading", "Installed") - compatible with 1.6
+        await this.callAction('FirmwareStatusNotification', { status });
+    }
+
+    async sendDiagnosticsStatusNotification(status: string): Promise<void> {
+        // 2.0.1 uses LogStatusNotificationRequest
+        await this.callAction('LogStatusNotification', { status: status === 'Uploading' ? 'Uploading' : 'Uploaded' });
+    }
 }
