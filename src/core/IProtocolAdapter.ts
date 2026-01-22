@@ -8,6 +8,8 @@ export interface IProtocolAdapter {
     // Callback for outgoing messages or events that the Charger core needs to handle
     // e.g., logging, or state updates requested by the adapter
     onMessage(handler: (message: any, direction: 'in' | 'out') => void): void;
+    // Callback for incoming REQUESTS from CSMS (Remote Actions)
+    onRequestHandler(handler: (action: string, payload: any) => Promise<any>): void;
 
     // Core Operations
     sendBootNotification(model: string, vendor: string): Promise<{ interval: number; status: string }>;

@@ -15,6 +15,32 @@ export class Charger {
         this.adapter.onMessage((msg) => {
             console.log(`[Charger ${chargerId}] Adapter message:`, msg);
         });
+
+        // Register Request Handler for incoming Remote Actions
+        this.adapter.onRequestHandler(async (action, payload) => {
+            console.log(`[Charger ${chargerId}] Handling Remote Action: ${action}`, payload);
+            try {
+                switch (action) {
+                    case 'RemoteStartTransaction':
+                        // Async trigger start charging (Simulate user plug-in + auth)
+                        await this.handleRemoteStart(payload.idTag || payload.idToken?.idToken, payload.connectorId || 1);
+                        return { status: 'Accepted' };
+                    case 'RemoteStopTransaction':
+                        await this.handleRemoteStop(payload.transactionId);
+                        return { status: 'Accepted' };
+                    case 'Reset':
+                        await this.handleReset(payload.type);
+                        return { status: 'Accepted' };
+                    case 'UnlockConnector':
+                        return { status: 'Unlocked' };
+                    default:
+                        throw new Error('NotImplemented');
+                }
+            } catch (err: any) {
+                console.error(`[Charger ${chargerId}] Error handling ${action}:`, err);
+                return { status: 'Rejected' };
+            }
+        });
     }
 
     get version(): string {
@@ -116,5 +142,47 @@ export class Charger {
         connector.status = 'Available';
         connector.currentTransactionId = undefined;
         await this.adapter.sendStatusNotification(connectorId, 'Available');
+    }
+
+    // --- Remote Action Handlers ---
+
+    private async handleRemoteStart(idTag: string, connectorId: number) {
+        console.log('Remote Start Requested');
+        // Simulate slight delay then start
+        setTimeout(() => {
+            this.startCharging(connectorId, idTag).catch(e => console.error('Remote Start Failed', e));
+        }, 1000);
+    }
+
+    private async handleRemoteStop(transactionId: number | string) {
+        console.log('Remote Stop Requested for tx', transactionId);
+        // Find connector with this tx
+        // Note: OCPP 2.0.1 uses string transaction IDs, 1.6 uses numbers.
+        // We need weak comparison or normalization.
+        const connectorIdString = Object.keys(this.state.connectors).find(cid => {
+            return this.state.connectors[Number(cid)].currentTransactionId == transactionId;
+        });
+
+        if (connectorIdString) {
+            setTimeout(() => {
+                this.stopCharging(Number(connectorIdString), 'RemoteStop').catch(e => console.error('Remote Stop Failed', e));
+            }, 1000);
+        } else {
+            console.warn('Transaction not found for RemoteStop');
+        }
+    }
+
+    private async handleReset(type: 'Soft' | 'Hard') {
+        console.log(`Received ${type} Reset.`);
+        // Simulate reboot
+        setTimeout(async () => {
+            await this.disconnect();
+            this.state.booted = false;
+            this.notifyStateChange();
+            setTimeout(async () => {
+                await this.connect();
+                await this.boot();
+            }, 2000);
+        }, 1000);
     }
 }

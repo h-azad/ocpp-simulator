@@ -16,6 +16,7 @@ export class Ocpp16JsonAdapter implements IProtocolAdapter {
     private ws: WebSocket | null = null;
     private messageHandlers: Map<string, { resolve: (val: any) => void; reject: (err: any) => void }> = new Map();
     private externalMessageHandler: ((message: any, direction: 'in' | 'out') => void) | null = null;
+    private requestHandler: ((action: string, payload: any) => Promise<any>) | null = null;
 
     async connect(csmsUrl: string, chargerId: string): Promise<void> {
         return new Promise((resolve, reject) => {
@@ -51,6 +52,10 @@ export class Ocpp16JsonAdapter implements IProtocolAdapter {
 
     onMessage(handler: (message: any, direction: 'in' | 'out') => void): void {
         this.externalMessageHandler = handler;
+    }
+
+    onRequestHandler(handler: (action: string, payload: any) => Promise<any>): void {
+        this.requestHandler = handler;
     }
 
     // --- Core Operations ---
@@ -196,8 +201,24 @@ export class Ocpp16JsonAdapter implements IProtocolAdapter {
                 }
             } else if (typeId === 2) {
                 // CALL: [2, MessageId, Action, Payload]
-                // Incoming request from CSMS. Already logged above.
-                // We might need to process it later (e.g. RemoteStart), but for now just logging is enough.
+                const [_, msgId, action, payload] = message;
+                if (this.requestHandler) {
+                    this.requestHandler(action, payload)
+                        .then(responsePayload => {
+                            const response = [3, msgId, responsePayload];
+                            this.ws?.send(JSON.stringify(response));
+                            if (this.externalMessageHandler) this.externalMessageHandler(response, 'out');
+                        })
+                        .catch(err => {
+                            const error = [4, msgId, 'InternalError', err.message, {}];
+                            this.ws?.send(JSON.stringify(error));
+                            if (this.externalMessageHandler) this.externalMessageHandler(error, 'out');
+                        });
+                } else {
+                    // No handler -> NotSupported
+                    const error = [4, msgId, 'NotSupported', 'No handler registered', {}];
+                    this.ws?.send(JSON.stringify(error));
+                }
             }
         } catch (err) {
             console.error('Failed to process message', err);
