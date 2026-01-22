@@ -5,6 +5,8 @@ A powerful, multi-version OCPP (Open Charge Point Protocol) simulator built with
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Version](https://img.shields.io/badge/OCPP-1.6%20%7C%202.0.1-green)
 
+![Dashboard Preview](public/dashboard-preview.png)
+
 ## Features
 
 -   **Multi-Protocol Support**: Full support for **OCPP 1.6 JSON** and experimental support for **OCPP 2.0.1**.
@@ -38,9 +40,25 @@ A powerful, multi-version OCPP (Open Charge Point Protocol) simulator built with
     npm install
     ```
 
-## Running the Simulator
+### Running with Docker (Recommended)
 
-To run the full simulator environment, you need to start three separate processes. It is recommended to run these in separate terminal windows.
+To run the entire stack (Frontend, Backend, Mock CSMS) using Docker Compose:
+
+1.  Build and start the containers:
+    ```bash
+    docker-compose up --build -d
+    ```
+
+2.  Access the dashboard at [http://localhost:3000](http://localhost:3000).
+
+To stop the containers:
+```bash
+docker-compose down
+```
+
+### Running Locally (Manual)
+
+To run the full simulator environment manually, you need to start three separate processes.
 
 ### 1. Mock CSMS (Optional)
 If you don't have an external CSMS to connect to, start the local mock server:

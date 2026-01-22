@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    container_name: ocpp_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    command: npm start
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  backend:
+    build: .
+    container_name: ocpp_backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+    # Override default command to run the simulator backend
+    command: npm run simulator
+    restart: unless-stopped
+
+  csms:
+    build: .
+    container_name: ocpp_mock_csms
+    ports:
+      - "9220:9220"
+    environment:
+      - NODE_ENV=production
+    # Override default command to run the mock csms
+    command: npm run mock-csms
+    restart: unless-stopped
