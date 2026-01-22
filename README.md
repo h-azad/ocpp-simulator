@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OCPP EV Charging Simulator
 
-## Getting Started
+A powerful, multi-version OCPP (Open Charge Point Protocol) simulator built with Next.js and Node.js. This tool allows users to simulate Electric Vehicle Supply Equipment (EVSE) behavior, test communication with a CSMS (Charging Station Management System), and debug OCPP messages in real-time.
 
-First, run the development server:
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Version](https://img.shields.io/badge/OCPP-1.6%20%7C%202.0.1-green)
 
+## Features
+
+-   **Multi-Protocol Support**: Full support for **OCPP 1.6 JSON** and experimental support for **OCPP 2.0.1**.
+-   **Real-time Dashboard**: Interactive UI to manage chargers, trigger actions, and view current status.
+-   **Live Logs**: Inspect outgoing (Request) and incoming (Response/Error) OCPP messages in real-time with payload details.
+-   **Connection Management**: Connect and disconnect chargers dynamically from the UI.
+-   **Mock CSMS**: Includes a built-in Mock CSMS for local testing and development.
+-   **Event-Driven Architecture**: Built on WebSockets for instant feedback and state synchronization.
+
+## Tech Stack
+
+-   **Frontend**: Next.js 14, React, Tailwind CSS
+-   **Backend**: Node.js, Express, `ws` (WebSocket), Zod (Validation)
+-   **Language**: TypeScript
+
+## Prerequisites
+
+-   Node.js (v18 or higher)
+-   npm or yarn
+
+## Installation
+
+1.  Clone the repository:
+    ```bash
+    git clone <repository-url>
+    cd ocpp-simulator
+    ```
+
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+## Running the Simulator
+
+To run the full simulator environment, you need to start three separate processes. It is recommended to run these in separate terminal windows.
+
+### 1. Mock CSMS (Optional)
+If you don't have an external CSMS to connect to, start the local mock server:
+```bash
+npm run mock-csms
+```
+*   Runs on: `ws://localhost:9220`
+
+### 2. Simulator Backend
+This is the core engine that manages the charger instances and protocol adapters:
+```bash
+npm run simulator
+```
+*   API Port: `3001`
+*   WebSocket Port: `3001`
+
+### 3. Frontend Dashboard
+Start the Next.js UI:
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+*   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage Guide
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1.  **Open the Dashboard**: Go to `http://localhost:3000`.
+2.  **Create a Charger**:
+    *   Enter a **Charger ID** (e.g., `CP001`).
+    *   Enter the **CSMS URL** (defaults to local mock `ws://localhost:9220`).
+    *   Select the **Protocol Version** (OCPP 1.6 JSON or OCPP 2.0.1).
+    *   Click **Create Charger**.
+3.  **Interact**:
+    *   Select the charger from the **Active Chargers** list.
+    *   Use the **Actions** panel to send:
+        *   `BootNotification`
+        *   `Heartbeat`
+        *   `Connect` / `Disconnect`
+4.  **View Logs**:
+    *   The **Live Logs** panel displays all traffic.
+    *   `->` indicates outgoing messages (from Charger).
+    *   `<-` indicates incoming messages (from CSMS).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+├── src
+│   ├── app               # Next.js Frontend App Router
+│   ├── backend           # Simulator Server & Mock CSMS
+│   │   ├── server.ts     # Main backend entry point
+│   │   └── SimulatorManager.ts # Logic to manage charger instances
+│   ├── core              # Core logic agnostic of protocol version
+│   │   ├── Charger.ts    # Main Charger class
+│   │   └── IProtocolAdapter.ts # Interface for adapters
+│   └── protocols         # Protocol-specific implementations
+│       ├── ocpp16        # OCPP 1.6 JSON Adapter & Schemas
+│       └── ocpp201       # OCPP 2.0.1 Adapter
+```
